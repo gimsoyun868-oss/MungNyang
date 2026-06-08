@@ -1,5 +1,7 @@
 package com.mungnyang.backend.user.controller;
 
+import com.mungnyang.backend.user.dto.LoginRequest;
+import com.mungnyang.backend.user.dto.LoginResponse;
 import com.mungnyang.backend.user.dto.SignupRequest;
 import com.mungnyang.backend.user.dto.SignupResponse;
 import com.mungnyang.backend.user.service.UserService;
@@ -20,5 +22,11 @@ public class UserController {
     public ResponseEntity<SignupResponse> signup(@Valid @RequestBody SignupRequest request) {
         SignupResponse response = userService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse response = userService.login(request);
+        return ResponseEntity.ok(response);
     }
 }
