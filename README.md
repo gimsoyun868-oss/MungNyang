@@ -269,53 +269,82 @@ OpenAI API
 
 ---
 
-# 9. ERD 초안
+## 9.ERD 다이어그램 (Entity Relationship Diagram)
 
-users
 
-- id
-- email
-- password
-- nickname
+```mermaid
+erDiagram
+    users ||--o{ pets : "registers"
+    users ||--o{ reviews : "writes"
+    users ||--o{ community_posts : "authors"
+    places ||--o{ reviews : "receives"
+    pets ||--o{ health_records : "has"
 
-pets
+    users {
+        bigint id PK
+        varchar email UK
+        varchar password
+        varchar nickname UK
+        varchar status
+        timestamp created_at
+        timestamp updated_at
+    }
 
-- id
-- user_id
-- name
-- species
-- breed
-- weight
+    pets {
+        bigint id PK
+        bigint user_id FK
+        varchar name
+        varchar species
+        varchar breed
+        char gender
+        boolean is_neutered
+        date birth_date
+        decimal weight
+        timestamp created_at
+    }
 
-places
+    places {
+        bigint id PK
+        varchar name
+        varchar category
+        varchar address
+        varchar tel
+        decimal latitude
+        decimal longitude
+        boolean is_open
+    }
 
-- id
-- name
-- category
-- address
+    reviews {
+        bigint id PK
+        bigint user_id FK
+        bigint place_id FK
+        tinyint rating
+        text content
+        varchar image_url
+        timestamp created_at
+        timestamp updated_at
+    }
 
-reviews
+    community_posts {
+        bigint id PK
+        bigint user_id FK
+        varchar title
+        longtext content
+        int view_count
+        boolean is_deleted
+        timestamp created_at
+        timestamp updated_at
+    }
 
-- id
-- user_id
-- place_id
-- rating
-- content
-
-community_posts
-
-- id
-- user_id
-- title
-- content
-
-health_records
-
-- id
-- pet_id
-- title
-- record_date
-
+    health_records {
+        bigint id PK
+        bigint pet_id FK
+        varchar type
+        varchar title
+        text content
+        date record_date
+        timestamp created_at
+    }
 ---
 
 # 10. API 설계
