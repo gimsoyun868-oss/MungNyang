@@ -18,3 +18,5 @@ spring:
     properties:
       hibernate:
         format_sql: true
+tmap:
+     api-key: "AtcRG1V8Yd6bIk9pmFZPl1BTOGnD6Dkn22sV4nUL"

@@ -19,7 +19,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/signup").permitAll()
+                        .requestMatchers(
+                                "/api/users/signup",
+                                "/api/users/login",
+                                "/api/files/upload",
+                                "/uploads/**"
+                        ).permitAll()
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form.disable())
