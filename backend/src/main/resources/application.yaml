@@ -19,8 +19,8 @@ spring:
       hibernate:
         format_sql: true
 tmap:
-     api-key: "AtcRG1V8Yd6bIk9pmFZPl1BTOGnD6Dkn22sV4nUL"
+  api-key: ${TMAP_API_KEY}
 
 naver:
-  client-id: rpelPwzMFKgfLRGEenSJ
-  client-secret: pBYVjnKDKA
+  client-id: ${NAVER_CLIENT_ID}
+  client-secret: ${NAVER_CLIENT_SECRET}

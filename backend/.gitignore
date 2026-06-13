@@ -4,7 +4,11 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+backend/src/main/resources/application-local.yaml
 
+backend/uploads/
+
+*.log
 ### STS ###
 .apt_generated
 .classpath
@@ -35,3 +39,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+
+src/main/resources/application-local.yaml
