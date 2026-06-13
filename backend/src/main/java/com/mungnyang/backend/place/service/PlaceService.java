@@ -2,6 +2,8 @@ package com.mungnyang.backend.place.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mungnyang.backend.naver.dto.NaverPlaceResponse;
+import com.mungnyang.backend.naver.service.NaverLocalService;
 import com.mungnyang.backend.place.dto.PlaceResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,14 +26,61 @@ public class PlaceService {
     private String tmapApiKey;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final NaverLocalService naverLocalService;
 
     public List<PlaceResponse> searchPlaces(String category, Double lat, Double lng) {
+        if (isNaverCategory(category)) {
+            return searchPlacesByNaver(category);
+        }
+
+        return searchPlacesByTmap(category, lat, lng);
+    }
+
+    private boolean isNaverCategory(String category) {
+        return category.contains("동반 카페")
+                || category.contains("동반 식당")
+                || category.contains("동반 펍")
+                || category.contains("동반 베이커리")
+                || category.contains("동반 숙소");
+    }
+
+    private List<PlaceResponse> searchPlacesByNaver(String category) {
+        String keyword = switch (category) {
+            case "반려동물 동반 카페" -> "애견동반 카페";
+            case "반려동물 동반 식당" -> "애견동반 식당";
+            case "반려동물 동반 펍" -> "애견동반 펍";
+            case "반려동물 동반 베이커리" -> "애견동반 베이커리";
+            case "반려동물 동반 숙소" -> "애견동반 숙소";
+            default -> category;
+        };
+
+        List<NaverPlaceResponse> naverPlaces = naverLocalService.searchLocal(keyword);
+        List<PlaceResponse> places = new ArrayList<>();
+
+        for (NaverPlaceResponse place : naverPlaces) {
+            String address = !place.getRoadAddress().isBlank()
+                    ? place.getRoadAddress()
+                    : place.getAddress();
+
+            places.add(
+                    PlaceResponse.builder()
+                            .name(place.getTitle())
+                            .address(address)
+                            .category(category)
+                            .latitude(0.0)
+                            .longitude(0.0)
+                            .build()
+            );
+        }
+
+        return places;
+    }
+
+    private List<PlaceResponse> searchPlacesByTmap(String category, Double lat, Double lng) {
         try {
             String keyword = switch (category) {
-                case "반려동물 동반 카페" -> "애견카페";
-                case "반려동물 동반 식당" -> "애견동반 식당";
-                case "펫 호텔" -> "펫호텔";
                 case "동물병원" -> "동물병원";
+                case "펫 호텔" -> "펫호텔";
                 case "산책 · 운동장" -> "애견운동장";
                 case "미용실" -> "애견미용";
                 default -> category;
@@ -56,22 +105,17 @@ public class PlaceService {
             connection.setRequestMethod("GET");
             connection.setRequestProperty("appKey", tmapApiKey);
             connection.setRequestProperty("Accept", "application/json");
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
 
             int statusCode = connection.getResponseCode();
 
-            BufferedReader reader;
-
-            if (statusCode >= 200 && statusCode < 300) {
-                reader = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)
-                );
-            } else {
-                reader = new BufferedReader(
-                        new InputStreamReader(connection.getErrorStream(), StandardCharsets.UTF_8)
-                );
-            }
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            statusCode >= 200 && statusCode < 300
+                                    ? connection.getInputStream()
+                                    : connection.getErrorStream(),
+                            StandardCharsets.UTF_8
+                    )
+            );
 
             StringBuilder responseBody = new StringBuilder();
             String line;
@@ -81,13 +125,6 @@ public class PlaceService {
             }
 
             reader.close();
-
-            System.out.println("===== TMAP URL =====");
-            System.out.println(urlString);
-            System.out.println("===== TMAP STATUS =====");
-            System.out.println(statusCode);
-            System.out.println("===== TMAP RESPONSE =====");
-            System.out.println(responseBody);
 
             if (statusCode < 200 || statusCode >= 300) {
                 return List.of();
@@ -133,7 +170,7 @@ public class PlaceService {
             return places;
 
         } catch (Exception e) {
-            System.out.println("===== PLACE SERVICE ERROR =====");
+            System.out.println("===== TMAP PLACE ERROR =====");
             e.printStackTrace();
             return List.of();
         }
